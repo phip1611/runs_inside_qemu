@@ -36,6 +36,10 @@ use raw_cpuid::{ExtendedFunctionInfo, HypervisorInfo};
 /// Returns if the code is running inside a QEMU virtual machine.
 /// Only works on x86/x86_64 platform.
 ///
+/// Doesn't panic and in case something strange happens, it returns
+/// `false` in favor of a `Result`, because these errors are absolutely
+/// unlikely.
+///
 /// ## Example Usage
 ///
 /// ```rust
@@ -61,25 +65,52 @@ pub fn runs_inside_qemu() -> bool {
     compile_error!("This crate only works on the x86/x86_64-platform.");
 
     let id = CpuId::new();
+
+    // ########## STEP 1 ##########
+    let feature_info = id.get_feature_info();
+    if feature_info.is_none() {
+        // should never happen, except the CPU or virtualization environment does weird things
+        log::debug!(
+            "feature_info is not present, this is REALLY strange. Can't verify if we are in QEMU."
+        );
+        return false;
+    }
+    let feature_info = feature_info.unwrap();
+    if !feature_info.has_hypervisor() {
+        // QEMU is a hypervisor and no real machine => exit if flag not set
+        // If we run in a Hypervisor, this flag is set (also see https://lwn.net/Articles/301888/)
+        log::debug!("Hypervisor-flag is not set, we are not in QEMU");
+        return false;
+    }
+
+    // ########## STEP 2 ##########
+    // Now we know that we are in a Hypervisor environment
     let hypervisor_info = id.get_hypervisor_info();
     if hypervisor_info.is_none() {
-        // QEMU is a hypervisor and no real machine => exit
+        // should never happen, except the CPU or virtualization environment does weird things
+        log::debug!("hypervisor_info is not present but hypervisor-flag is, this is REALLY strange");
         return false;
     }
     let hypervisor_info = hypervisor_info.unwrap();
     // if this returns false, because the hypervisor ID can be "KVM",
     // we still could be executed by QEMU -> further checks needed
     if hypervisor_has_qemu_id(&hypervisor_info) {
+        log::debug!("QEMU is the direct hypervisor");
         return true;
     }
 
+    // ########## STEP 3 ##########
     // now check the extended CPU id, which is provided by QEMU
     let extended_info = id.get_extended_function_info();
     if extended_info.is_none() {
         return false;
     }
     let extended_info = extended_info.unwrap();
-    extended_brand_string_contains_qemu(&extended_info)
+    let is_qemu = extended_brand_string_contains_qemu(&extended_info);
+    if is_qemu {
+        log::debug!("Runs inside QEMU with {:?} as accelerator", hypervisor_info.identify());
+    }
+    is_qemu
 }
 
 /// Checks if the Hypervisor-ID is the well-known value of QEMU.

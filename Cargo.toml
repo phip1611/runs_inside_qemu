@@ -17,6 +17,9 @@ homepage = "https://github.com/phip1611/runs_inside_qemu"
 repository = "https://github.com/phip1611/runs_inside_qemu"
 documentation = "https://docs.rs/runs_inside_qemu"
 
+[dependencies]
+log = { version = "0.4.14", default-features = false }
+
 # Exclude dependency for illegal arches
 # => that way, the compiler_error!()-macro in lib.rs gets active
 [target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies]
