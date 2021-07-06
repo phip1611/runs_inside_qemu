@@ -3,8 +3,10 @@
 `runs_inside_qemu` is a small `no_std`-lib that checks if the binary is running inside a 
 QEMU virtual machine. It doesn't need heap allocations and only works on `x86`/`x86_64` platform.
 
-
 Under the hood, this is a wrapper around the awesome crate https://crates.io/crates/raw-cpuid.
+
+This crate was build/tested with `rustc 1.55.0-nightly`. It won't work on stable 
+as long as inline assembly is not part of stable rust.
 
 ## Example Code
 ```rust
