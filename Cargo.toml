@@ -1,0 +1,27 @@
+[package]
+name = "runs_inside_qemu"
+description = """
+Small no_std-lib that checks if the binary is running inside a QEMU virtual machine.
+Only works on x86/x86_64 platform.
+"""
+version = "1.0.0"
+edition = "2018"
+exclude = [
+    ".travis.yml"
+]
+categories = ["no-std"]
+keywords = ["QEMU"]
+readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/phip1611/runs_inside_qemu"
+repository = "https://github.com/phip1611/runs_inside_qemu"
+documentation = "https://docs.rs/runs_inside_qemu"
+
+# Exclude dependency for illegal arches
+# => that way, the compiler_error!()-macro in lib.rs gets active
+[target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies]
+raw-cpuid = "9.1"
+
+# for examples
+[target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dev-dependencies]
+x86 = "0.40.0"
