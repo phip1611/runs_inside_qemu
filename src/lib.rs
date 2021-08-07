@@ -117,15 +117,9 @@ pub fn runs_inside_qemu() -> bool {
 /// If this fails, we still could be in a QEMU environment, because
 /// if QEMU is accelerated by KVM, the Hypervisor-ID is the one from KVM.
 fn hypervisor_has_qemu_id(info: &HypervisorInfo) -> bool {
-    match info.identify() {
-        // `TCGTCGTCGTCG` is the magic value of the CPU signature of QEMU,
-        // see https://github.com/qemu/qemu/blob/6512fa497c2fa9751b9d774ab32d87a9764d1958/target/i386/cpu.c
-        Hypervisor::Unknown(0x5447_4354, 0x4354_4743, 0x4743_5447) => {
-            // definitely QEMU
-            true
-        }
-        _ => false,
-    }
+    // `TCGTCGTCGTCG` is the magic value of the CPU signature of QEMU,
+    // see https://github.com/qemu/qemu/blob/6512fa497c2fa9751b9d774ab32d87a9764d1958/target/i386/cpu.c
+    matches!(info.identify(), Hypervisor::Unknown(0x5447_4354, 0x4354_4743, 0x4743_5447))
 }
 
 /// Consumes the extended function info from CPU-ID. In a QEMU environment,
