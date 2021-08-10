@@ -6,6 +6,11 @@ rustup target add x86_64-unknown-linux-gnu
 cargo build --target x86_64-unknown-linux-gnu
 cargo test --target x86_64-unknown-linux-gnu
 
+rustup component add rustfmt
+rustup component add clippy
+cargo fmt -- --check
+cargo clippy
+
 # build for non x86 platform should fail
 set +e
 rustup target add thumbv6m-none-eabi 1>/dev/null 2>&1

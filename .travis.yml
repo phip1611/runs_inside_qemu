@@ -6,4 +6,9 @@ cache: cargo
 script:
   - cargo build
   - cargo test
+  - rustup component add rustfmt
+  - rustup component add clippy
+  - cargo fmt -- --check
+  - cargo clippy
+
 
