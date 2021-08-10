@@ -68,33 +68,17 @@ pub fn runs_inside_qemu() -> bool {
     let id = CpuId::new();
 
     // ########## CHECK 1 ##########
-    let feature_info = id.get_feature_info();
-    if feature_info.is_none() {
-        // should never happen, except the CPU or virtualization environment does weird things
-        log::debug!(
-            "feature_info is not present, this is REALLY strange. Can't verify if we are in QEMU."
-        );
-        return false;
-    }
-    let feature_info = feature_info.unwrap();
-    if !feature_info.has_hypervisor() {
-        // QEMU is a hypervisor and no real machine => exit if flag not set
-        // If we run in a Hypervisor, this flag is set (also see https://lwn.net/Articles/301888/)
-        log::debug!("Hypervisor-flag is not set, we are not in QEMU");
-        return false;
-    }
-
-    // ########## CHECK 2 ##########
-    // Now we know that we are in a Hypervisor environment
+    // The `x86` library first checks if the Hypervisor flag is present in the `cpuid` features.
+    // If yes, it reads the Hypervisor info leaf from `cpuid`.
+    // Also see https://lwn.net/Articles/301888/)
     let hypervisor_info = id.get_hypervisor_info();
     if hypervisor_info.is_none() {
-        // should never happen, except the CPU or virtualization environment does weird things
-        log::debug!(
-            "hypervisor_info is not present but Hypervisor-flag is, this is REALLY strange"
-        );
+        // QEMU is a Hypervisor and no real machine => exit if this is None
+        log::debug!("Hypervisor flag is not set, no Hypervisor info available!");
         return false;
     }
     let hypervisor_info = hypervisor_info.unwrap();
+
     // if this returns false, because the hypervisor ID can be "KVM",
     // we still could be executed by QEMU -> further checks needed
     if matches!(hypervisor_info.identify(), Hypervisor::QEMU) {
@@ -102,13 +86,14 @@ pub fn runs_inside_qemu() -> bool {
         return true;
     }
 
-    // ########## CHECK 3 ##########
-    // now check the extended CPU brand string (which can be QEMU specific)
+    // ########## CHECK 2 ##########
+    // now check the extended CPU brand string (which is specific for QEMU)
     let brand_string = id.get_processor_brand_string();
     if brand_string.is_none() {
         return false;
     }
     let brand_string = brand_string.unwrap();
+
     let brand_string = brand_string.as_str();
     let is_qemu = brand_string.contains("QEMU");
     if is_qemu {
