@@ -27,3 +27,7 @@ fn main() {
     }
 }
 ```
+
+## Limitations
+This doesn't work if you pass `-cpu host` to QEMU, because in this case the CPU brand string is 
+not "QEMU Virtual CPU version 2.5+".

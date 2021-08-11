@@ -90,17 +90,21 @@ pub fn runs_inside_qemu() -> bool {
     // now check the extended CPU brand string (which is specific for QEMU)
     let brand_string = id.get_processor_brand_string();
     if brand_string.is_none() {
+        log::debug!("CPU brand string not available, can't verify if code runs inside QEMU");
         return false;
     }
     let brand_string = brand_string.unwrap();
-
     let brand_string = brand_string.as_str();
+
     let is_qemu = brand_string.contains("QEMU");
     if is_qemu {
+        // "QEMU Virtual CPU version 2.5+"
         log::debug!(
             "Runs inside QEMU with {:?} as accelerator",
             hypervisor_info.identify()
         );
+    } else {
+        log::debug!("CPU brand string is not the one from QEMU");
     }
     is_qemu
 }
