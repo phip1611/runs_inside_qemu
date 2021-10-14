@@ -4,7 +4,7 @@ description = """
 Small no_std-lib that checks if the binary is running inside a QEMU virtual machine.
 Only works on x86/x86_64 platforms.
 """
-version = "1.0.4"
+version = "1.1.0"
 edition = "2018"
 exclude = [
     ".travis.yml"
