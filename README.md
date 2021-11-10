@@ -32,5 +32,5 @@ fn main() {
 This doesn't work if you pass `-cpu host` to QEMU, because in this case the CPU brand string is 
 not "QEMU Virtual CPU version 2.5+".
 
-## MSRV
-The MSRV is 1.56.1 stable.
+## Rust version / MSRV
+This crate needs the nightly toolchain. With Rust 1.56.1 stable, it doesn't build.
