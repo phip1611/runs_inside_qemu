@@ -1,0 +1,33 @@
+name: Build
+
+# Triggers the workflow on push or pull request events (for any branch in a repository)
+on: [ push, pull_request ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - nightly
+    steps:
+      - uses: actions/checkout@v2
+      - run: cargo build
+      - run: cargo run --example is_qemu
+
+  style_checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+    steps:
+      - uses: actions/checkout@v2
+      - name: Rustfmt
+        run: cargo fmt -- --check
+      - name: Clippy
+        run: cargo clippy --all
