@@ -1,6 +1,5 @@
-# v1.2.0 (2021-11-10)
-- MSRV is now 1.56.1
-- Rust edition is 2021
+# v1.2.0/1.2.1 (2021-11-10)
+- Rust edition 2021
 
 # v1.1.0 (2021-10-14)
 ### Breaking Changes
