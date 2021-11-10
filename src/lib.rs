@@ -49,7 +49,7 @@ pub enum QemuCertainty {
     /// setup only uses QEMU/KVM as Hypervisor, this is equal
     /// to [`Self::VeryLikely`].
     ///
-    /// This happens, if you use something like "-cpu host" instead of "-cpu qemu64".
+    /// This happens, if you use something like "-cpu host" instead of "-cpu qemu64" as QEMU option.
     Maybe,
 
     /// The information obtained by CPUID clearly states, that the code runs inside QEMU.
