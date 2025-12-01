@@ -15,7 +15,7 @@ jobs:
           # - stable
           - nightly
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: cargo build
       - run: cargo run --example is_qemu
 
@@ -27,7 +27,7 @@ jobs:
           # - stable
           - nightly
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Rustfmt
         run: cargo fmt -- --check
       - name: Clippy
