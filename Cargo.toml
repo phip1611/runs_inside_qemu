@@ -15,6 +15,7 @@ license = "MIT"
 homepage = "https://github.com/phip1611/runs_inside_qemu"
 repository = "https://github.com/phip1611/runs_inside_qemu"
 documentation = "https://docs.rs/runs_inside_qemu"
+rust-version = "1.85.1"
 
 [dependencies]
 log = { version = "0.4", default-features = false }

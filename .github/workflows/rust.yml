@@ -1,34 +1,65 @@
 name: Build
 
-# Triggers the workflow on push or pull request events (for any branch in a repository)
-on: [ push, pull_request ]
+on: [ pull_request, push, merge_group ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: "${{ matrix.runs-on }}"
     strategy:
+      fail-fast: false
       matrix:
+        runs-on:
+          - ubuntu-latest # x86_64
+          - windows-latest # x86_64
         rust:
-          # - stable
+          - stable
           - nightly
+          - 1.85.1 # MSVR
     steps:
       - uses: actions/checkout@v6
-      - run: cargo build
-      - run: cargo run --example is_qemu
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "${{ matrix.rust }}"
+          targets: x86_64-unknown-linux-gnu,x86_64-unknown-uefi,i686-unknown-uefi,thumbv7em-none-eabihf,aarch64-unknown-uefi,riscv64gc-unknown-none-elf
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: "${{ matrix.runs-on }}-${{ matrix.rust }}"
+      - name: Build
+        run: cargo build --all-targets --verbose
+      - name: Build (no_std, x86)
+        run: |
+          cargo build --verbose --all-features --target i686-unknown-uefi
+          cargo build --verbose --all-features --target x86_64-unknown-uefi
+      - name: Run tests
+        run: cargo test --verbose --all-features
 
+  # Style + documentation checks
   style_checks:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
-          # - stable
-          - nightly
+          - stable
     steps:
       - uses: actions/checkout@v6
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "${{ matrix.rust }}"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: "${{ matrix.rust }}"
       - name: Rustfmt
-        run: cargo fmt -- --check
+        run: cargo fmt --all -- --check
       - name: Clippy
-        run: cargo clippy --all
+        run: cargo clippy --all-targets
+      - name: Rustdoc
+        run: cargo doc --no-deps --document-private-items
