@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Philipp Schuster
+Copyright (c) 2026 Philipp Schuster
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-//! Small `no_std`-lib that checks if the binary is running inside a QEMU virtual machine.
-//! Only works on x86/x86_64 platform. There are no heap allocation required.
+//! Small no_std lib that checks if the code is running inside a QEMU virtual
+//! machine.
 //!
-//! Under the hood, this is a wrapper around the awesome crate <https://crates.io/crates/raw-cpuid>.
+//! Uses `cpuid` and currently only works on x86/x86_64.
 
 #![no_std]
 #![deny(clippy::all)]
@@ -38,7 +38,7 @@ compile_error!("This crate only works on the x86/x86_64-platform.");
 use raw_cpuid::{CpuId, Hypervisor};
 
 /// Result of [`runs_inside_qemu`] that tells with what certainty the code runs inside QEMU.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum QemuCertainty {
     /// The code definitely doesn't run inside QEMU, because the Hypervisor-flag is not set.
     DefinitelyNot,
@@ -150,5 +150,17 @@ pub fn runs_inside_qemu() -> QemuCertainty {
             hypervisor_info.identify()
         );
         QemuCertainty::Maybe
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ord() {
+        assert!(QemuCertainty::DefinitelyNot < QemuCertainty::Maybe);
+        assert!(QemuCertainty::Maybe < QemuCertainty::VeryLikely);
+        assert!(QemuCertainty::DefinitelyNot < QemuCertainty::VeryLikely);
     }
 }
